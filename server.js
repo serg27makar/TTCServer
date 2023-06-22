@@ -4,12 +4,13 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const {MongoClient} = require('mongodb');
-const url = "mongodb://localhost:27017/";
+// const url = "mongodb://localhost:27017/";
+const url = "mongodb+srv://serg27makar:IzLNsJf5D1mHa1aA@atlascluster.ashui4i.mongodb.net/";
 
 const mongoClient = new MongoClient(url);
 const server = http.createServer(app);
-var path = require('path');
-var fs = require('fs');
+const path = require('path');
+const fs = require('fs');
 
 let dbClient;
 
