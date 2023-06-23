@@ -1,12 +1,12 @@
-import {mongodbUrl} from "./utils/secret";
-
+const secret = require('./utils/secret');
+const url = secret.mongodbUrl();
 const http =require('http');
 const cors = require('cors');
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const {MongoClient} = require('mongodb');
-const mongoClient = new MongoClient(mongodbUrl);
+const mongoClient = new MongoClient(url);
 const server = http.createServer(app);
 const path = require('path');
 const fs = require('fs');
@@ -131,4 +131,7 @@ process.on("SIGINT", () => {
 function isDebugging() {
     return typeof v8debug === 'object'
         || /--debug|--inspect/.test(process.execArgv.join(' '));
+}
+function getMongoDB() {
+
 }
