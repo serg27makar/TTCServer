@@ -1,13 +1,12 @@
+import {mongodbUrl} from "./utils/secret";
+
 const http =require('http');
 const cors = require('cors');
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const {MongoClient} = require('mongodb');
-// const url = "mongodb://localhost:27017/";
-const url = "mongodb+srv://serg27makar:IzLNsJf5D1mHa1aA@atlascluster.ashui4i.mongodb.net/";
-
-const mongoClient = new MongoClient(url);
+const mongoClient = new MongoClient(mongodbUrl);
 const server = http.createServer(app);
 const path = require('path');
 const fs = require('fs');
