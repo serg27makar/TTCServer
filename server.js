@@ -15,6 +15,8 @@ let dbClient;
 
 const TTCDB = "TTCDB";
 const UsersDB = "UsersDB";
+const UsersPhones = "UsersPhones";
+const UsersCollection = "UsersCollection";
 
 const route_names = [
     'users',
@@ -34,6 +36,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use((request,response,next)=>{
     if (['/users/register',
+        '/users/addUserInfo',
         '/users/login'].includes(request.path)) {
         next();
         return
@@ -58,7 +61,9 @@ app.use((request,response,next)=>{
 });
 
 mongoClient.connect().then(() => {
-    app.locals.collection = mongoClient.db(TTCDB).collection(UsersDB);
+    app.locals.usersDB = mongoClient.db(TTCDB).collection(UsersDB);
+    app.locals.usersCollection = mongoClient.db(TTCDB).collection(UsersCollection);
+    app.locals.usersPhones = mongoClient.db(TTCDB).collection(UsersPhones);
     server.listen(usedPort, function () {
         console.log("Server ready...", usedPort);
     });
