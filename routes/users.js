@@ -7,7 +7,6 @@ router.post('/login', async (req, res, next) => {
     if (!req.body) return res.sendStatus(400);
     const { Phone, Password } = req.body;
     const user = {Password: Password, Phone: Phone};
-    console.log(req.body)
     const collection = req.app.locals.usersDB;
     try {
         collection.findOne(user).then(result => {
@@ -45,18 +44,46 @@ router.post("/register", async (req, res) => {
     }
 });
 
-router.post("/users/addUserInfo", async (req, res) => {
-    console.log(req)
-
+router.post("/addUserInfo", async (req, res) => {
     if (!req.body) return res.sendStatus(400);
     const user = db.AddedUser(req.body);
+    const userRating = db.AddedUserRating(req.body);
 
     const usersCollection = req.app.locals.usersCollection;
-    const usersPhones = req.app.locals.usersPhones;
+    const usersRating = req.app.locals.usersRating;
     try {
         usersCollection.insertOne(user).then(result => {
-            res.send(result);
-            res.end();
+            if (result && result.insertedId) {
+                user.phones.map(item => {
+                    const rating = {
+                        rating
+                    }
+                })
+                usersRating.insertOne().then(ratingResult => {
+                    res.send(result);
+                    res.end();
+                })
+            }
+        })
+    } catch (e) {
+        res.end();
+    }
+});
+
+router.post('/getUserInfo', async (req, res, next) => {
+    if (!req.body) return res.sendStatus(400);
+    const { Phone } = req.body;
+    const data = { phones:{ phone: Phone}};
+    const collection = req.app.locals.usersCollection;
+    try {
+        collection.findOne(data).then(result => {
+            if (!result) {
+                res.send('find:0');
+                res.end();
+            } else {
+                res.send(result);
+                res.end();
+            }
         })
     } catch (e) {
         res.end();
