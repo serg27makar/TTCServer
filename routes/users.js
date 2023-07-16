@@ -1,6 +1,7 @@
 const db = require("../modules/database");
 const express = require('express');
 const router = express.Router();
+const ObjectId = require("mongodb").ObjectId;
 module.exports = router ;
 
 router.post('/login', async (req, res, next) => {
@@ -46,20 +47,39 @@ router.post("/register", async (req, res) => {
 
 router.post("/addUserInfo", async (req, res) => {
     if (!req.body) return res.sendStatus(400);
-    const user = db.AddedUser(req.body);
-    const userRating = db.AddedUserRating(req.body);
+    const client = db.AddedClient(req.body);
+    const usRating = db.AddedUserRating(req.body);
 
     const usersCollection = req.app.locals.usersCollection;
     const usersRating = req.app.locals.usersRating;
     try {
-        usersCollection.insertOne(user).then(result => {
+        usersCollection.insertOne(client).then(result => {
             if (result && result.insertedId) {
-                user.phones.map(item => {
-                    const rating = {
-                        rating
-                    }
+                usersRating.insertOne(usRating).then(ratingResult => {
+                    res.send(result);
+                    res.end();
                 })
-                usersRating.insertOne().then(ratingResult => {
+            }
+        })
+    } catch (e) {
+        res.end();
+    }
+});
+
+router.post("/editUserInfo", async (req, res) => {
+    if (!req.body) return res.sendStatus(400);
+    const client = db.AddedClient(req.body);
+    let usRating = db.AddedUserRating(req.body);
+    usRating = {...usRating, usRating: client.id}
+
+    const usersCollection = req.app.locals.usersCollection;
+    const usersRating = req.app.locals.usersRating;
+    const data = db.incrementFields(client)
+
+    try {
+        usersCollection.updateOne({_id: new ObjectId(client.id)}, data).then(result => {
+            if (result && result.modifiedCount) {
+                usersRating.insertOne(usRating).then(ratingResult => {
                     res.send(result);
                     res.end();
                 })

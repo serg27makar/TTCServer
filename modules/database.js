@@ -20,8 +20,10 @@ module.exports.User = function(body) {
 };
 
 module.exports.AddedUserRating = function(body) {
-    const {ratingPoint, calcRatingPoint, infoRatingPoint, downtimeRatingPoint} = body;
-    let rating = {}
+    const {ratingPoint, calcRatingPoint, infoRatingPoint, downtimeRatingPoint, investigatorId} = body;
+    let rating = {
+        investigatorId,
+    }
     if (ratingPoint) rating = {...rating, ratingPoint}
     if (calcRatingPoint) rating = {...rating, calcRatingPoint}
     if (infoRatingPoint) rating = {...rating, infoRatingPoint}
@@ -29,8 +31,8 @@ module.exports.AddedUserRating = function(body) {
     return rating;
 }
 
-module.exports.AddedUser = function(body) {
-    const { type, name, investigatorId, date } = body;
+module.exports.AddedClient = function(body) {
+    const { type, name, investigatorId, date, id } = body;
     let user = {
         type,
         name,
@@ -38,6 +40,7 @@ module.exports.AddedUser = function(body) {
         date,
         phones: AddedPhones(body)
     };
+    if (id) user = {...user, id}
     const data = Classifier(body)
     user = {...user, ...data};
     return user;
@@ -131,4 +134,44 @@ function AddedPhones(body) {
         phones.push({phone: item})
     })
     return phones;
+}
+
+module.exports.incrementFields = function (user) {
+    const {rating, Calculation, InformativenessUnloading, Downtime} = user
+    let data = {};
+    let dataTrader = {};
+    if (rating) {
+        for (let i in rating) {
+            if (rating[i]) {
+                const item = "rating." + i;
+                data = {...data, ...{$inc:{[item] : rating[i]}}}
+            }
+        }
+    }
+    if (Calculation) {
+        for (let i in Calculation) {
+            if (Calculation[i]) {
+                const item = "Calculation." + i;
+                dataTrader[item] = Calculation[i]
+            }
+        }
+    }
+    if (InformativenessUnloading) {
+        for (let i in InformativenessUnloading) {
+            if (InformativenessUnloading[i]) {
+                const item = "InformativenessUnloading." + i;
+                dataTrader[item] = InformativenessUnloading[i]
+            }
+        }
+    }
+    if (Downtime) {
+        for (let i in Downtime) {
+            if (Downtime[i]) {
+                const item = "Downtime." + i;
+                dataTrader[item] = Downtime[i]
+                data = {...data, ...{$inc: dataTrader}}
+            }
+        }
+    }
+    return data
 }

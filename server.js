@@ -38,6 +38,7 @@ app.use((request,response,next)=>{
     if (['/users/register',
         '/users/addUserInfo',
         '/users/getUserInfo',
+        '/users/editUserInfo',
         '/users/login'].includes(request.path)) {
         next();
         return
