@@ -12,7 +12,7 @@ router.post('/login', async (req, res, next) => {
     try {
         collection.findOne(user).then(result => {
             if (!result) {
-                res.send('find:0');
+                res.send(null);
                 res.end();
             } else {
                 const {UserName, _id, Phone} = result;
@@ -98,7 +98,7 @@ router.post('/getUserInfo', async (req, res, next) => {
     try {
         collection.findOne(data).then(result => {
             if (!result) {
-                res.send('find:0');
+                res.send(null);
                 res.end();
             } else {
                 res.send(result);
