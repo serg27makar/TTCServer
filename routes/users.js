@@ -74,7 +74,8 @@ router.post("/editUserInfo", async (req, res) => {
 
     const usersCollection = req.app.locals.usersCollection;
     const usersRating = req.app.locals.usersRating;
-    const data = db.incrementFields(client)
+    let data = db.incrementFields(client)
+    data = {...data, ...{$set: {"phones": client.phones}}}
 
     try {
         usersCollection.updateOne({_id: new ObjectId(client.id)}, data).then(result => {
