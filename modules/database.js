@@ -1,5 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
+const secret = require("../utils/secret");
+const secretKey = secret.secretTokenKey();
+
 module.exports = router ;
 
 const userType = {
@@ -9,12 +13,13 @@ const userType = {
 }
 
 module.exports.User = function(body) {
-    const { UserName, Email, Permission, Password, Phone, UserRole, DeviceID, DateCreated } = body;
+    const { UserName, Email, Permission, Password, Phone, UserRole, DeviceID, DateCreated, UserType } = body;
     let user = {};
     if (Phone) user = {...user, Phone};
     if (Email) user = {...user, Email};
     if (UserName) user = {...user, UserName};
     if (UserRole) user = {...user, UserRole};
+    if (UserType) user = {...user, UserType};
     if (DeviceID) user = {...user, DeviceID};
     if (DateCreated) user = {...user, DateCreated};
     if (Password) user = {...user, Password};
@@ -177,4 +182,12 @@ module.exports.incrementFields = function (user) {
         }
     }
     return data
+}
+
+module.exports.generateAccessToken = function (id, userType) {
+    const payload = {
+        id,
+        userType
+    }
+    return jwt.sign(payload, secretKey, {expiresIn: "24h"})
 }

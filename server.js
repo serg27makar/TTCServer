@@ -1,6 +1,6 @@
 const secret = require('./utils/secret');
 const url = secret.mongodbUrl();
-const http =require('http');
+const http = require('http');
 const cors = require('cors');
 const express = require("express");
 const app = express();
@@ -10,6 +10,8 @@ const mongoClient = new MongoClient(url);
 const server = http.createServer(app);
 const path = require('path');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
+const secretKey = secret.secretTokenKey();
 
 let dbClient;
 
@@ -23,23 +25,15 @@ const route_names = [
 ];
 
 let api = "";
-let usedPort = 80;
-
-if (isDebugging()) {
-    usedPort = 3001;
-    api = "";
-}
+// const usedPort = 3001;
+const usedPort = 80;
 
 app.use(cors());
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use((request,response,next)=>{
-    if (['/users/register',
-        '/users/addUserInfo',
-        '/users/getUserInfo',
-        '/users/editUserInfo',
-        '/users/login'].includes(request.path)) {
+    if (['/users/register', '/users/login'].includes(request.path)) {
         next();
         return
     }
@@ -52,11 +46,18 @@ app.use((request,response,next)=>{
     if (access) {
         next();
     } else {
-        let cookies = request.headers;
-        if (cookies.token && cookies.token.length === 24) {
-            next();
+        let token = request.headers.cookie.split("=")[1]
+        if (token) {
+            const decodeData = jwt.verify(token, secretKey)
+            const {userType} = decodeData;
+            if (userType === "User") {
+                next();
+            } else {
+                response.sendStatus(403);
+                response.end();
+            }
         } else {
-            response.sendStatus(500);
+            response.sendStatus(401);
             response.end();
         }
     }
@@ -134,11 +135,3 @@ process.on("SIGINT", () => {
     dbClient.close();
     process.exit();
 });
-
-function isDebugging() {
-    return typeof v8debug === 'object'
-        || /--debug|--inspect/.test(process.execArgv.join(' '));
-}
-function getMongoDB() {
-
-}

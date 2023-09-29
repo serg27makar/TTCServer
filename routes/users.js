@@ -2,26 +2,37 @@ const db = require("../modules/database");
 const express = require('express');
 const router = express.Router();
 const ObjectId = require("mongodb").ObjectId;
+const bcrypt = require('bcryptjs');
+
 module.exports = router ;
 
 router.post('/login', async (req, res, next) => {
     if (!req.body) return res.sendStatus(400);
     const { Phone, Password } = req.body;
-    const user = {Password: Password, Phone: Phone};
+    const user = {Phone: Phone};
     const collection = req.app.locals.usersDB;
     try {
         collection.findOne(user).then(result => {
             if (!result) {
-                res.send(null);
+                res.send({errMsg: "AuthError"});
                 res.end();
             } else {
-                const {UserName, _id, Phone} = result;
+                const {UserName, _id, Phone, UserType, UserRole} = result;
+                const validPassword = bcrypt.compareSync(Password, result.Password);
+                if (!validPassword) {
+                    res.send({errMsg: "AuthError"});
+                    res.end();
+                }
+                const token = db.generateAccessToken(_id, UserType);
                 const data = {
                     UserID: _id,
                     UserName,
+                    UserType,
+                    UserRole,
                     Phone,
                 };
-                res.send(data);
+                res.cookie('token', token)
+                res.send(data)
                 res.end();
             }
         })
@@ -36,11 +47,20 @@ router.post("/register", async (req, res) => {
     const user = db.User(req.body);
     const collection = req.app.locals.usersDB;
     try {
-        collection.insertOne(user).then(result => {
-            res.send(result);
-            res.end();
+        collection.findOne({Phone: user.Phone}).then(findRes => {
+            if (findRes) {
+                res.send({errMsg: "PhoneToExist"});
+                res.end();
+            } else {
+                user.Password = bcrypt.hashSync(user.Password, 7);
+                collection.insertOne(user).then(result => {
+                    res.send(result);
+                    res.end();
+                })
+            }
         })
     } catch (e) {
+        res.sendStatus(400);
         res.end();
     }
 });
