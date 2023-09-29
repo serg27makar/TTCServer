@@ -9,11 +9,14 @@ const userType = {
 }
 
 module.exports.User = function(body) {
-    const { UserName, Email, Permission, Password, Phone } = body;
+    const { UserName, Email, Permission, Password, Phone, UserRole, DeviceID, DateCreated } = body;
     let user = {};
     if (Phone) user = {...user, Phone};
     if (Email) user = {...user, Email};
     if (UserName) user = {...user, UserName};
+    if (UserRole) user = {...user, UserRole};
+    if (DeviceID) user = {...user, DeviceID};
+    if (DateCreated) user = {...user, DateCreated};
     if (Password) user = {...user, Password};
     if (Permission) user = {...user, Permission};
     return user;
