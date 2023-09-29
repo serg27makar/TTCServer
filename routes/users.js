@@ -130,3 +130,19 @@ router.post('/getUserInfo', async (req, res, next) => {
         res.end();
     }
 });
+
+router.post('/checkPhoneToExist', async (req, res, next) => {
+    if (!req.body) return res.sendStatus(400);
+    const { Phone } = req.body;
+    const data = { phones:{ phone: Phone}};
+    const collection = req.app.locals.usersCollection;
+    try {
+        collection.findOne(data).then(result => {
+            console.log(result)
+            res.send(!!result);
+            res.end();
+        })
+    } catch (e) {
+        res.end();
+    }
+});
