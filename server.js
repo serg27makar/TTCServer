@@ -46,7 +46,10 @@ app.use((request,response,next)=>{
     if (access) {
         next();
     } else {
-        let token = request.headers.cookie.split("=")[1]
+        let token = null;
+        if (request.headers && request.headers.cookie) {
+            token = request.headers.cookie.split("=")[1]
+        }
         if (token) {
             const decodeData = jwt.verify(token, secretKey)
             const {userType} = decodeData;
