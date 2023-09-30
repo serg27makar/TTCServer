@@ -189,5 +189,5 @@ module.exports.generateAccessToken = function (id, userType) {
         id,
         userType
     }
-    return jwt.sign(payload, secretKey, {expiresIn: "24h"})
+    return jwt.sign(payload, secretKey, {expiresIn: "30d"})
 }

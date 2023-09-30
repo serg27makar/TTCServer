@@ -54,6 +54,8 @@ router.post("/register", async (req, res) => {
             } else {
                 user.Password = bcrypt.hashSync(user.Password, 7);
                 collection.insertOne(user).then(result => {
+                    const token = db.generateAccessToken(result.insertedId.toString(), "User");
+                    res.cookie('token', token)
                     res.send(result);
                     res.end();
                 })
