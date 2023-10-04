@@ -17,7 +17,7 @@ router.post('/login', async (req, res, next) => {
                 res.send({errMsg: "AuthError"});
                 res.end();
             } else {
-                const {UserName, _id, Phone, UserType, UserRole} = result;
+                const {UserName, _id, Phone, UserType, UserRole, SearchHistory} = result;
                 const validPassword = bcrypt.compareSync(Password, result.Password);
                 if (!validPassword) {
                     res.send({errMsg: "AuthError"});
@@ -30,6 +30,7 @@ router.post('/login', async (req, res, next) => {
                     UserType,
                     UserRole,
                     Phone,
+                    SearchHistory,
                 };
                 res.cookie('token', token)
                 res.send(data)
@@ -88,6 +89,39 @@ router.post("/addUserInfo", async (req, res) => {
     }
 });
 
+router.post("/addSearchToHistory", async (req, res) => {
+    if (!req.body) return res.sendStatus(400);
+    const {phone, date, UserID} = req.body;
+    const usersDB = req.app.locals.usersDB;
+
+    const data = {
+        phone,
+        date
+    }
+
+    try {
+        usersDB.updateOne({_id: new ObjectId(UserID)}, {
+            $set: {"SearchHistory.$[elem]": data}}, {
+            arrayFilters: [{"elem.phone": phone}], upsert: true}
+            ).then(result => {
+            if (result && result.modifiedCount) {
+                res.send(result);
+                res.end();
+            } else {
+                usersDB.updateOne({_id: new ObjectId(UserID)}, {
+                    $push: {"SearchHistory": data}}
+                ).then(result2 => {
+                    res.send(result2);
+                    res.end();
+                })
+            }
+        })
+    } catch (e) {
+        res.end();
+    }
+
+});
+
 router.post("/editUserInfo", async (req, res) => {
     if (!req.body) return res.sendStatus(400);
     const client = db.AddedClient(req.body);
@@ -120,6 +154,26 @@ router.post('/getUserInfo', async (req, res, next) => {
     const collection = req.app.locals.usersCollection;
     try {
         collection.findOne(data).then(result => {
+            if (!result) {
+                res.send(null);
+                res.end();
+            } else {
+                res.send(result);
+                res.end();
+            }
+        })
+    } catch (e) {
+        res.end();
+    }
+});
+
+router.post('/getSearchUsersInfo', async (req, res, next) => {
+    if (!req.body) return res.sendStatus(400);
+    const { phones } = req.body;
+    const data = { phones: {$in: phones}};
+    const collection = req.app.locals.usersCollection;
+    try {
+        collection.find(data).toArray().then(result => {
             if (!result) {
                 res.send(null);
                 res.end();

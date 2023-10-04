@@ -14,7 +14,9 @@ const userType = {
 
 module.exports.User = function(body) {
     const { UserName, Email, Permission, Password, Phone, UserRole, DeviceID, DateCreated, UserType } = body;
-    let user = {};
+    let user = {
+        SearchHistory: []
+    };
     if (Phone) user = {...user, Phone};
     if (Email) user = {...user, Email};
     if (UserName) user = {...user, UserName};
