@@ -55,10 +55,15 @@ router.post("/register", async (req, res) => {
             } else {
                 user.Password = bcrypt.hashSync(user.Password, 7);
                 collection.insertOne(user).then(result => {
-                    const token = db.generateAccessToken(result.insertedId.toString(), "User");
-                    res.cookie('token', token)
-                    res.send(result);
-                    res.end();
+                    if (result) {
+                        const token = db.generateAccessToken(result.insertedId.toString(), "User");
+                        res.cookie('token', token)
+                        res.send(result);
+                        res.end();
+                    } else {
+                        res.send(false);
+                        res.end();
+                    }
                 })
             }
         })
@@ -82,6 +87,9 @@ router.post("/addUserInfo", async (req, res) => {
                     res.send(result);
                     res.end();
                 })
+            } else {
+                res.send(false);
+                res.end();
             }
         })
     } catch (e) {
@@ -111,15 +119,41 @@ router.post("/addSearchToHistory", async (req, res) => {
                 usersDB.updateOne({_id: new ObjectId(UserID)}, {
                     $push: {"SearchHistory": data}}
                 ).then(result2 => {
-                    res.send(result2);
-                    res.end();
+                    if (result2) {
+                        res.send(result2);
+                        res.end();
+                    } else {
+                        res.send(false);
+                        res.end();
+                    }
                 })
             }
         })
     } catch (e) {
         res.end();
     }
+});
 
+router.post("/removeItemOnHistory", async (req, res) => {
+    if (!req.body) return res.sendStatus(400);
+    const {phone, UserID} = req.body;
+    const usersDB = req.app.locals.usersDB;
+
+    try {
+        usersDB.updateOne({_id: new ObjectId(UserID)}, {
+            $pull: {"SearchHistory" : {"phone" : phone}}}
+            ).then(result => {
+            if (result && result.modifiedCount) {
+                res.send(result);
+                res.end();
+            } else {
+                res.send(false);
+                res.end();
+            }
+        })
+    } catch (e) {
+        res.end();
+    }
 });
 
 router.post("/editUserInfo", async (req, res) => {
@@ -137,9 +171,17 @@ router.post("/editUserInfo", async (req, res) => {
         usersCollection.updateOne({_id: new ObjectId(client.id)}, data).then(result => {
             if (result && result.modifiedCount) {
                 usersRating.insertOne(usRating).then(ratingResult => {
-                    res.send(result);
-                    res.end();
+                    if (ratingResult) {
+                        res.send(result);
+                        res.end();
+                    } else {
+                        res.send(false);
+                        res.end();
+                    }
                 })
+            } else {
+                res.send(false);
+                res.end();
             }
         })
     } catch (e) {
@@ -194,9 +236,13 @@ router.post('/checkPhoneToExist', async (req, res, next) => {
     const collection = req.app.locals.usersCollection;
     try {
         collection.findOne(data).then(result => {
-            console.log(result)
-            res.send(!!result);
-            res.end();
+            if (result) {
+                res.send(!!result);
+                res.end();
+            } else {
+                res.send(false);
+                res.end();
+            }
         })
     } catch (e) {
         res.end();
